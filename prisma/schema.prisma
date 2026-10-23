@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                Int                @id @default(autoincrement())
+  name              String
+  email             String             @unique
+  password          String
+  role              String             @default("pelamar") // "admin", "perusahaan", "pelamar"
+  createdAt         DateTime           @default(now())
+  perusahaanProfile PerusahaanProfile?
+  pelamarProfile    PelamarProfile?
+}
+
+model PerusahaanProfile {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique
+  companyName  String
+  description  String?
+  logoUrl      String?  // path file logo yang diupload
+  website      String?
+  address      String?
+  user         User     @relation(fields: [userId], references: [id])
+  jobs         Job[]
+}
+
+model PelamarProfile {
+  id           Int           @id @default(autoincrement())
+  userId       Int           @unique
+  photoUrl     String?       // path foto profil yang diupload
+  cvUrl        String?       // path file CV yang diupload
+  portfolioUrl String?
+  githubLink   String?
+  skills       String?
+  education    String?
+  user         User          @relation(fields: [userId], references: [id])
+  applications Application[]
+}
+
+model Job {
+  id           Int               @id @default(autoincrement())
+  perusahaanId Int
+  title        String
+  description  String
+  requirements String
+  location     String
+  salary       String?
+  jobType      String?           // "Full-time", "Part-time", "Magang", "Remote"
+  deadline     DateTime
+  createdAt    DateTime          @default(now())
+  perusahaan   PerusahaanProfile @relation(fields: [perusahaanId], references: [id])
+  applications Application[]
+}
+
+model Application {
+  id            Int            @id @default(autoincrement())
+  jobId         Int
+  pelamarId     Int
+  status        String         @default("dilamar") // "dilamar", "dilihat", "interview", "diterima", "ditolak"
+  interviewDate DateTime?
+  interviewNote String?
+  appliedAt     DateTime       @default(now())
+  job           Job            @relation(fields: [jobId], references: [id])
+  pelamar       PelamarProfile @relation(fields: [pelamarId], references: [id])
+}
